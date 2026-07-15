@@ -1,0 +1,187 @@
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+class Library; 
+
+class User {
+public:
+    string name;
+    int ID;
+    vector<string> borrowed = {"Book2", "Book3"};
+    vector<int> borrowedprice = {450, 500};
+
+    User(string username, int num) {
+        this->name = username;
+        this->ID = num;
+    }
+
+    void members(Library& lib);
+    void borrow(Library& lib);
+    void returning(Library& lib);
+    void ui(Library& lib);
+};
+
+class Library {
+public:
+    vector<int> price = {350, 450, 500, 346};
+    vector<string> collection = {"Book1", "Book2", "Book3", "Book4"};
+
+    void books() {
+        for (size_t i = 0; i < collection.size(); i++) {
+            cout << "\n---------------------------------------------------\nBook Name:" 
+                 << collection[i] << "\nBook Price:" << price[i] 
+                 << "\n---------------------------------------------------";
+        }
+    }
+
+    void addbook() {
+        string BookName;
+        int amount;
+        cout << "\n---------------------------------------------------\nEnter the book name: ";
+        cin >> BookName;
+        collection.push_back(BookName);
+
+        cout << "\n---------------------------------------------------\nEnter the book price: ";
+        cin >> amount;
+        price.push_back(amount);
+    }
+};
+
+void User::members(Library& lib) {
+    cout << "\n---------------------------------------------------\n Member Name: " << this->name 
+         << "\nMember Id: " << this->ID << "\n---------------------------------------------------\n";
+
+    cout << "\nPress 0 for Exit or 1 for main menu: ";
+    int x; cin >> x;    
+    while (x != 0 && x != 1) {
+        cout << "\nPlease Enter a valid Input\n" << endl; cin >> x;
+    }
+    if (x == 0) exit(1);
+    else this->ui(lib);
+}
+
+void User::borrow(Library& lib) {
+    int a;
+    cout << "\n---------------------------------------------------\nPress 1 to check borrowed books, Press 0 borrow a book: ";
+    cin >> a;
+
+    while (a != 0 && a != 1) {
+        cout << "\nPlease Enter a valid Input\n" << endl; cin >> a;
+    }
+
+    if (a == 1) {
+        for (size_t z = 0; z < this->borrowed.size(); z++) {
+            cout << "\n-------------------------------------------------------\n" 
+                 << this->borrowed[z] << "  " << this->borrowedprice[z] 
+                 << "\n-------------------------------------------------------\n" << endl;
+        }
+    } 
+    else if (a == 0) {
+        string bookname;
+        cout << "\n-------------------------------------------------------\nEnter the book name to borrow: ";
+        cin >> bookname;
+
+        bool found = false;
+        for (size_t i = 0; i < lib.collection.size(); i++) {
+            if (bookname == lib.collection[i]) {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            cout << "\n Sorry but this book isn't in the library.\n-------------------------------------------------------\n";
+            cout << "\nPress 0 for Exit or 1 for main menu: ";
+            int x; cin >> x;    
+            while (x != 0 && x != 1) { cout << "\nPlease Enter a valid Input\n"; cin >> x; }
+            if (x == 0) exit(1);
+            else { this->ui(lib); return; }
+        }
+        
+        for (size_t i = 0; i < this->borrowed.size(); i++) {
+            if (this->borrowed[i] == bookname) {
+                cout << "\n-------------------------------------------------------\nSorry but you have already borrowed this book\n-------------------------------------------------------\n";
+                cout << "\nPress 0 for Exit or 1 for main menu: ";
+                int x; cin >> x;    
+                while (x != 0 && x != 1) { cout << "\nPlease Enter a valid Input\n"; cin >> x; }
+                if (x == 0) exit(1);
+                else { this->ui(lib); return; }
+            }
+        }
+
+        this->borrowed.push_back(bookname);
+        for (size_t i = 0; i < lib.collection.size(); i++) {
+            if (lib.collection[i] == bookname) {
+                this->borrowedprice.push_back(lib.price[i]);
+                break;
+            }
+        }
+        cout << "\n" << bookname << ": borrowed Successfully" << endl;
+    }
+
+    cout << "\nPress 0 for Exit or 1 for main menu: ";
+    int x; cin >> x;    
+    while (x != 0 && x != 1) { cout << "\nPlease Enter a valid Input\n"; cin >> x; }
+    if (x == 0) exit(1);
+    else this->ui(lib);
+}
+
+void User::returning(Library& lib) {
+    string retbook;
+    cout << "\n---------------------------------------------------\nEnter the Book that you want to return: ";
+    cin >> retbook;
+    bool found = false;
+
+    for (size_t i = 0; i < this->borrowed.size(); i++) {
+        if (this->borrowed[i] == retbook) {
+            this->borrowed.erase(this->borrowed.begin() + i);
+            this->borrowedprice.erase(this->borrowedprice.begin() + i);
+            found = true;
+            cout << "\nReturned Successfully\n";
+            break;
+        }
+    }
+
+    if (!found) {
+        cout << "\n---------------------------------------------------\nSorry This Book Wasn't From Our Library(ps: Make Sure To Enter Correct Spelling)";    
+    }
+
+    cout << "\nPress 0 for Exit or 1 for main menu: ";
+    int x; cin >> x;    
+    while (x != 0 && x != 1) {
+        cout << "\nPlease Enter a valid Input\n" << endl; cin >> x;
+    }
+    if (x == 0) exit(1);
+    else this->ui(lib);
+}
+
+void User::ui(Library& lib) {
+    int x;
+    cout << "\nWhat you wish to do---------------------------------------------------"
+         << "\n 1.Book Collection \n 2.Add Book \n 3.Borrow/Borrowed \n 4.Library Members Details \n 5.Return Book \n 6.Exit \n ---------------------------------------------------" << endl;
+    cin >> x;
+
+    while (x > 6 || x < 1) {
+        cout << "Please Enter a Valid Input" << endl;
+        cin >> x;
+    }
+
+    if (x == 1) lib.books();
+    else if (x == 2) lib.addbook();
+    else if (x == 3) this->borrow(lib);
+    else if (x == 4) this->members(lib);
+    else if (x == 5) this->returning(lib);
+    else if (x == 6) exit(1);
+    
+    if (x == 1 || x == 2) this->ui(lib);
+}
+
+int main() {
+    Library centralizedLibrary;
+    User User1("Anant", 12334456);
+    User1.ui(centralizedLibrary);
+    return 0;
+}
